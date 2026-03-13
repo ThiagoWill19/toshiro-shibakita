@@ -1,0 +1,66 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: desafio-nginx
+    depends_on:
+      - app1
+      - app2
+    ports:
+      - "4500:4500"
+    networks:
+      - desafio-net
+
+  app1:
+    build:
+      context: .
+      dockerfile: php-app/Dockerfile
+    container_name: desafio-app1
+    environment:
+      DB_HOST: db
+      DB_NAME: meubanco
+      DB_USER: root
+      DB_PASSWORD: root
+      APP_NAME: app1
+    depends_on:
+      - db
+    networks:
+      - desafio-net
+
+  app2:
+    build:
+      context: .
+      dockerfile: php-app/Dockerfile
+    container_name: desafio-app2
+    environment:
+      DB_HOST: db
+      DB_NAME: meubanco
+      DB_USER: root
+      DB_PASSWORD: root
+      APP_NAME: app2
+    depends_on:
+      - db
+    networks:
+      - desafio-net
+
+  db:
+    image: mysql:8.0
+    container_name: desafio-db
+    environment:
+      MYSQL_DATABASE: meubanco
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./banco.sql:/docker-entrypoint-initdb.d/01-banco.sql:ro
+    networks:
+      - desafio-net
+
+networks:
+  desafio-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
